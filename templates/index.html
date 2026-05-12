@@ -6,290 +6,225 @@
   <title>CSV Workspace</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Custom Slider Styles */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: default;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+      border: 2px solid #0f172a;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: default;
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+      border: 2px solid #0f172a;
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(45,212,191,0.22),transparent_35%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,0.2),transparent_40%),linear-gradient(165deg,#020617_8%,#0f172a_60%,#111827_100%)]"></div>
+<body class="bg-slate-950 text-slate-100">
+  <!-- Fixed Background to prevent cutting during scroll -->
+  <div class="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_15%_10%,rgba(45,212,191,0.22),transparent_35%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,0.2),transparent_40%),linear-gradient(165deg,#020617_8%,#0f172a_60%,#111827_100%)]"></div>
 
   <!-- Toast Container -->
   <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
 
-  <main class="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row lg:gap-8 lg:px-8 lg:py-8">
-    <aside class="w-full rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-2xl backdrop-blur lg:w-72 lg:shrink-0">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/90">CSV Workspace</p>
-        <h1 class="mt-2 text-2xl font-bold tracking-tight">Menu</h1>
-        <p class="mt-2 text-sm text-slate-300">Upload existing files or generate sample CSV datasets from configurable options.</p>
+  <!-- Main Content Container -->
+  <main class="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <header class="text-center space-y-2 mb-4">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/90">CSV Workspace</p>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Parser & Merger</h1>
+      <p class="mx-auto max-w-2xl text-base text-slate-300">
+        Effortlessly merge multiple CSV files, analyze their structure, and generate detailed reports.
+      </p>
+      <div class="mt-6 flex items-center justify-center gap-4">
+        <a href="{{ url_for('visualize') }}" class="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-6 py-2.5 text-sm font-bold text-cyan-400 shadow-lg transition-all hover:bg-slate-700 hover:scale-[1.02] active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          Visualize History
+        </a>
+      </div>
+    </header>
+
+    <!-- Upload Panel -->
+    <section id="panel-upload" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold tracking-tight text-white">Upload CSV Files</h2>
+        <p class="mt-1 text-sm text-slate-300">Drag and drop your files or click to browse. Folders are automatically tracked and rotated.</p>
       </div>
 
-      <nav class="mt-6 space-y-2">
-        <button
-          id="menu-upload"
-          type="button"
-          data-target="panel-upload"
-          class="menu-item w-full rounded-xl border px-4 py-3 text-left text-sm font-semibold transition"
-        >
-          Upload & Merge
-        </button>
-        <button
-          id="menu-generate"
-          type="button"
-          data-target="panel-generate"
-          class="menu-item w-full rounded-xl border px-4 py-3 text-left text-sm font-semibold transition"
-        >
-          Generate CSV
-        </button>
-      </nav>
-
-      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-xs text-slate-300">
-        Output files are stored in <span class="font-semibold text-slate-100">/outputs</span> or <span class="font-semibold text-slate-100">/results</span> and can be downloaded anytime after processing.
-      </div>
-    </aside>
-
-    <section class="flex-1 space-y-6">
-      {% if error %}
-        <div class="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-red-200">
-          {{ error }}
-        </div>
-      {% endif %}
-
-      <div id="panel-upload" class="menu-panel rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 shadow-2xl">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <h2 class="text-2xl font-bold tracking-tight">Upload and Merge CSV Files</h2>
-            <p class="mt-1 text-sm text-slate-300">Drag and drop CSV files or select files manually.</p>
+      <form method="post" enctype="multipart/form-data" class="space-y-4">
+        <input id="file-input" type="file" name="files" accept=".csv" multiple required class="hidden">
+        <div id="dropzone" class="group relative cursor-pointer rounded-2xl border-2 border-dashed border-cyan-400/30 bg-slate-800/20 p-10 text-center transition-all hover:border-cyan-300/60 hover:bg-slate-800/40">
+          <div class="space-y-2">
+            <svg class="mx-auto h-12 w-12 text-cyan-400/50 transition-colors group-hover:text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="text-lg font-semibold text-slate-100">Drop files here or click to browse</p>
+            <p class="text-xs text-slate-400">Only .csv files are supported</p>
           </div>
         </div>
 
-        <form method="post" enctype="multipart/form-data" class="mt-6">
-          <input type="hidden" name="action" value="upload">
-          <input id="file-input" type="file" name="files" accept=".csv" multiple required class="hidden">
-          <div id="dropzone" class="cursor-pointer rounded-xl border-2 border-dashed border-cyan-400/40 bg-slate-800/40 p-8 text-center transition hover:border-cyan-300 hover:bg-slate-800/70">
-            <p class="text-lg font-semibold">Drop CSV files here</p>
-            <p class="mt-1 text-sm text-slate-300">or click to select files</p>
-          </div>
-          <div class="mt-3 flex items-center justify-between gap-3">
-            <p id="file-count" class="text-sm text-slate-300">No files selected</p>
-            <button type="submit" class="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-cyan-950 transition hover:bg-cyan-300">
-              Upload and Merge
-            </button>
-          </div>
-          <p id="file-warning" class="mt-2 hidden rounded-md border border-amber-300/40 bg-amber-400/10 px-3 py-2 text-xs text-amber-200"></p>
-          <ul id="file-list" class="mt-3 space-y-1 text-sm text-slate-300"></ul>
-        </form>
-      </div>
-
-      <div id="panel-generate" class="menu-panel rounded-2xl border border-slate-800/80 bg-slate-900/80 p-6 shadow-2xl">
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight">Generate CSV Data</h2>
-          <p class="mt-1 text-sm text-slate-300">Create structured CSV data directly from this app using templates, or generate Week 3 style synthetic collections conversations.</p>
+        <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <p id="file-count" class="text-sm font-medium text-slate-400">No files selected</p>
+          <button type="submit" class="w-full rounded-xl bg-cyan-400 px-8 py-3 text-sm font-bold text-cyan-950 shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02] hover:bg-cyan-300 active:scale-95 sm:w-auto">
+            Process & Merge Files
+          </button>
         </div>
+        
+        <p id="file-warning" class="hidden rounded-xl border border-amber-300/20 bg-amber-400/5 px-4 py-3 text-xs text-amber-200"></p>
+        <ul id="file-list" class="grid grid-cols-1 gap-2 text-xs text-slate-400 sm:grid-cols-2"></ul>
+      </form>
+    </section>
 
-        <form method="post" class="mt-6 grid gap-4 sm:grid-cols-2">
-          <input type="hidden" name="action" value="generate">
-
-          <label class="space-y-2">
-            <span class="text-sm font-semibold text-slate-200">Template</span>
-            <select id="template-select" name="template" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-              <option value="contacts" {% if selected_template == 'contacts' %}selected{% endif %}>Contacts</option>
-              <option value="sales" {% if selected_template == 'sales' %}selected{% endif %}>Sales</option>
-              <option value="employees" {% if selected_template == 'employees' %}selected{% endif %}>Employees</option>
-              <option value="collections_synthetic" {% if selected_template == 'collections_synthetic' %}selected{% endif %}>Collections Synthetic (Week 3)</option>
-            </select>
-          </label>
-
-          <label id="rows-wrapper" class="space-y-2 standard-only">
-            <span class="text-sm font-semibold text-slate-200">Rows</span>
-            <input type="number" min="1" max="10000" name="rows" value="{{ entered_rows or 100 }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label id="columns-wrapper" class="space-y-2 sm:col-span-2 standard-only">
-            <span class="text-sm font-semibold text-slate-200">Custom columns (optional)</span>
-            <input type="text" name="columns" value="{{ entered_columns or '' }}" placeholder="id, full_name, email, country" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-            <p class="text-xs text-slate-400">Comma-separated column names. Leave empty to use the selected template defaults.</p>
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Scenarios per intent</span>
-            <input type="number" min="1" max="50" name="num_scenarios" value="{{ entered_num_scenarios or 5 }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Conversation variants</span>
-            <input type="number" min="1" max="25" name="num_variants" value="{{ entered_num_variants or 5 }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Temperature</span>
-            <input type="number" min="0" max="1.5" step="0.1" name="temperature" value="{{ entered_temperature or 0.7 }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Sentiments</span>
-            <input type="text" name="sentiments" value="{{ entered_sentiments or 'angry,confused,neutral' }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Sentiment probs</span>
-            <input type="text" name="sentiment_probs" value="{{ entered_sentiment_probs or '0.15,0.30,0.55' }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-1 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">User speech types</span>
-            <input type="text" name="user_speech" value="{{ entered_user_speech or 'casual,professional,slang,typos' }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-          </label>
-
-          <label class="space-y-2 sm:col-span-2 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">User speech probs</span>
-            <input type="text" name="user_speech_probs" value="{{ entered_user_speech_probs or '0.5,0.2,0.1,0.2' }}" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">
-            <p class="text-xs text-slate-400">Comma-separated probabilities. Counts must match label lists; they will be normalized.</p>
-          </label>
-
-          <label class="space-y-2 sm:col-span-2 synthetic-only">
-            <span class="text-sm font-semibold text-slate-200">Custom intents (optional)</span>
-            <textarea name="custom_intents" rows="5" placeholder="MAKE_PAYMENT|Customer wants to pay now&#10;PAYMENT_PLAN|Customer requests installments&#10;FALLBACK|Out-of-scope request" class="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-300 transition focus:ring-2">{{ entered_custom_intents or '' }}</textarea>
-            <p class="text-xs text-slate-400">One intent per line using <code>INTENT|Description</code>. FALLBACK is auto-added if omitted.</p>
-          </label>
-
-          <div class="sm:col-span-2">
-            <button type="submit" class="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300">
-              Generate CSV
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {% if merged_filename %}
-        <section class="grid gap-6 lg:grid-cols-3">
-          <div class="rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-xl lg:col-span-1">
-            <h3 class="text-xl font-semibold">Result Summary</h3>
-            <p class="mt-2 text-sm text-slate-300">Source: <span class="font-semibold text-white">{{ source_label or 'CSV Result' }}</span></p>
-            <p class="text-slate-300">Rows: <span class="font-semibold text-white">{{ total_rows }}</span></p>
-            <p class="text-slate-300">Columns: <span class="font-semibold text-white">{{ total_columns }}</span></p>
-            
-            {% if uploaded_files %}
-              <div class="mt-6 border-t border-slate-800 pt-4">
-                <h4 class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-3">Upload Analysis</h4>
-                <div class="space-y-3">
-                  {% for ufile in uploaded_files %}
-                    <div class="group relative rounded-xl border border-slate-800 bg-slate-950/40 p-3 transition hover:border-slate-700">
-                      <div class="flex items-center justify-between gap-3">
-                        <div class="flex-1 overflow-hidden">
-                          <p class="truncate text-sm font-semibold text-slate-100" title="{{ ufile.name }}">{{ ufile.name }}</p>
-                          <p class="text-[10px] text-slate-500 font-mono mt-0.5 truncate">{{ ufile.headers | join(', ') }}</p>
-                        </div>
-                        <div class="flex flex-col items-end gap-1">
-                          <span class="inline-flex items-center rounded-full bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300 ring-1 ring-inset ring-cyan-400/20">
-                            {{ ufile.rows }} rows
-                          </span>
-                          {% if ufile.header_status == 'ok' %}
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                              <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                              Head OK
-                            </span>
-                          {% else %}
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-400">
-                              <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                              Head Error
-                            </span>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endif %}
-
-            <div class="mt-4 flex flex-col gap-2">
-              <a href="{{ url_for('download', filepath=merged_filename) }}" class="inline-flex w-full justify-center rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300">
-                Download CSV
-              </a>
-              {% if report_filename %}
-                <a href="{{ url_for('download', filepath=report_filename) }}" class="inline-flex w-full justify-center rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-800">
-                  Download Text Report
-                </a>
-              {% endif %}
+    {% if merged_filename %}
+      <!-- Results Grid -->
+      <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Summary Card -->
+        <section class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl backdrop-blur-sm lg:col-span-1">
+          <h3 class="text-xl font-bold text-white mb-4">Result Summary</h3>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between border-b border-slate-800/50 pb-2">
+              <span class="text-slate-400">Total Rows</span>
+              <span class="font-bold text-white font-mono">{{ total_rows }}</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800/50 pb-2">
+              <span class="text-slate-400">Total Columns</span>
+              <span class="font-bold text-white font-mono">{{ total_columns }}</span>
             </div>
           </div>
+          
+          {% if uploaded_files %}
+            <div class="mt-8">
+              <h4 class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-4">Upload Analysis</h4>
+              <div class="space-y-3">
+                {% for ufile in uploaded_files %}
+                  <div class="rounded-xl border border-slate-800/50 bg-slate-950/40 p-4 transition hover:border-slate-700/50">
+                    <div class="flex items-center justify-between gap-2">
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-xs font-bold text-slate-100" title="{{ ufile.name }}">{{ ufile.name }}</p>
+                        <p class="text-[10px] text-slate-500 font-mono mt-1 truncate">{{ ufile.headers | join(', ') }}</p>
+                      </div>
+                      <div class="text-right shrink-0">
+                        <div class="text-[10px] font-bold text-cyan-300">{{ ufile.rows }} rows</div>
+                        {% if ufile.header_status == 'ok' %}
+                          <div class="mt-1 flex items-center justify-end gap-1 text-[9px] font-bold text-emerald-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Head OK
+                          </div>
+                        {% else %}
+                          <div class="mt-1 flex items-center justify-end gap-1 text-[9px] font-bold text-red-400">
+                            <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span> Error
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    
+                    <!-- Composition Visual (Slider-like Bar) -->
+                    <div class="mt-4 space-y-2">
+                      <div class="flex items-center justify-between text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                        <span>Composition Share</span>
+                        <span class="text-cyan-400">{{ "%.1f"|format(ufile.percentage) }}%</span>
+                      </div>
+                      <div class="relative group">
+                        <input type="range" min="0" max="100" value="{{ ufile.percentage }}" 
+                          class="w-full h-1.5 bg-slate-800 rounded-full appearance-none cursor-default accent-cyan-400"
+                          onclick="return false;" onkeydown="return false;">
+                        <div class="absolute -top-1 left-0 h-1.5 rounded-full bg-cyan-400/20 pointer-events-none transition-all" style="width: {{ ufile.percentage }}%"></div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
 
-          <div class="rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-xl lg:col-span-2">
-            <h3 class="text-xl font-semibold">Value Distribution (First Column)</h3>
-            <canvas id="csvChart" class="mt-4 max-h-72"></canvas>
+          <div class="mt-8 flex flex-col gap-3">
+            <a href="{{ url_for('download', filepath=merged_filename) }}" class="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-emerald-950 transition-all hover:bg-emerald-400 active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12 a2 2 0 002-2v-1M7 10l5 5m0 0l5-5m-5 5V3"></path></svg>
+              Download CSV
+            </a>
+            {% if report_filename %}
+              <a href="{{ url_for('download', filepath=report_filename) }}" class="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-sm font-bold text-slate-100 transition-all hover:bg-slate-800 active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Download Report
+              </a>
+            {% endif %}
           </div>
         </section>
 
-        <section class="rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5 shadow-xl">
-          <h3 class="text-xl font-semibold">Preview (First 12 Rows)</h3>
-          <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800">
-            <table class="min-w-full divide-y divide-slate-800 text-sm">
-              <thead class="bg-slate-800/80">
-                <tr>
+        <!-- Chart Card -->
+        <section class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl backdrop-blur-sm lg:col-span-2">
+          <h3 class="text-xl font-bold text-white mb-6">Value Distribution (First Column)</h3>
+          <div class="relative h-64 sm:h-80 w-full">
+            <canvas id="csvChart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- Preview Section -->
+      <section class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-white">Preview (First 12 Rows)</h3>
+          <span class="text-xs text-slate-400">Total columns: {{ total_columns }}</span>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-800/50 bg-slate-950/20">
+          <table class="min-w-full divide-y divide-slate-800 text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-800/30 text-slate-200">
+                {% for header in headers %}
+                  <th class="px-4 py-3 text-left font-bold tracking-wider">{{ header }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/50">
+              {% for row in preview_rows %}
+                <tr class="hover:bg-slate-800/10 transition-colors">
                   {% for header in headers %}
-                    <th class="px-3 py-2 text-left font-semibold text-slate-200">{{ header }}</th>
+                    <td class="whitespace-nowrap px-4 py-3 text-slate-400">{{ row[header] }}</td>
                   {% endfor %}
                 </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-800">
-                {% for row in preview_rows %}
-                  <tr class="bg-slate-900/20">
-                    {% for header in headers %}
-                      <td class="px-3 py-2 text-slate-300">{{ row[header] }}</td>
-                    {% endfor %}
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      {% endif %}
-    </section>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-slate-500 text-[10px] font-medium tracking-widest uppercase">
+      &copy; 2026 CSV Parser & Merger &bull; Powered by Flask & Tailwind
+    </footer>
   </main>
 
   <script>
-    const activeMenu = {{ (active_menu or 'upload') | tojson }};
-    const menuButtons = document.querySelectorAll(".menu-item");
-    const panels = document.querySelectorAll(".menu-panel");
-    const templateSelect = document.getElementById("template-select");
-    const standardOnlyFields = document.querySelectorAll(".standard-only");
-    const syntheticOnlyFields = document.querySelectorAll(".synthetic-only");
-
-    const setActiveMenu = (menu) => {
-      panels.forEach((panel) => {
-        panel.classList.toggle("hidden", panel.id !== `panel-${menu}`);
-      });
-
-      menuButtons.forEach((button) => {
-        const isActive = button.id === `menu-${menu}`;
-        button.classList.toggle("border-cyan-300/60", isActive);
-        button.classList.toggle("bg-cyan-400/20", isActive);
-        button.classList.toggle("text-cyan-100", isActive);
-        button.classList.toggle("border-slate-700", !isActive);
-        button.classList.toggle("bg-slate-900/60", !isActive);
-        button.classList.toggle("text-slate-200", !isActive);
-      });
-    };
-
+    // Toast Notification System
     const showToast = (message, type = 'success') => {
       const toastContainer = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      const bgColor = type === 'success' ? 'bg-emerald-500/90' : 'bg-red-500/90';
+      const bgColor = type === 'success' ? 'bg-emerald-500/95' : 'bg-red-500/95';
       const borderColor = type === 'success' ? 'border-emerald-400' : 'border-red-400';
       
-      toast.className = `min-w-[300px] px-6 py-4 rounded-xl border-2 ${bgColor} ${borderColor} text-white shadow-2xl backdrop-blur-md transform transition-all duration-500 translate-x-full opacity-0 flex items-center gap-3`;
+      toast.className = `min-w-[280px] max-w-sm px-5 py-4 rounded-2xl border-2 ${bgColor} ${borderColor} text-white shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-x-full opacity-0 flex items-center gap-3`;
       
       const icon = type === 'success' 
-        ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
-        : '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>'
+        : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>';
       
-      toast.innerHTML = `${icon}<span class="font-bold">${message}</span>`;
+      toast.innerHTML = `${icon}<span class="font-bold text-sm tracking-tight">${message}</span>`;
       toastContainer.appendChild(toast);
       
-      // Animate In
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         toast.classList.remove('translate-x-full', 'opacity-0');
-      }, 10);
+      });
       
-      // Remove
       setTimeout(() => {
         toast.classList.add('opacity-0', 'scale-95');
         setTimeout(() => toast.remove(), 500);
@@ -297,40 +232,14 @@
     };
 
     {% if merged_filename %}
-      window.addEventListener('DOMContentLoaded', () => {
-        showToast("Files merged successfully!");
-      });
+      window.addEventListener('DOMContentLoaded', () => showToast("Files merged successfully!"));
     {% endif %}
 
     {% if error %}
-      window.addEventListener('DOMContentLoaded', () => {
-        showToast("{{ error }}", "error");
-      });
+      window.addEventListener('DOMContentLoaded', () => showToast("{{ error }}", "error"));
     {% endif %}
 
-    menuButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const target = button.dataset.target || "panel-upload";
-        const menu = target.replace("panel-", "") || "upload";
-        setActiveMenu(menu);
-      });
-    });
-
-    setActiveMenu(activeMenu);
-
-    const updateGenerateFormVisibility = () => {
-      const selectedTemplate = templateSelect ? templateSelect.value : "contacts";
-      const isSynthetic = selectedTemplate === "collections_synthetic";
-
-      standardOnlyFields.forEach((field) => field.classList.toggle("hidden", isSynthetic));
-      syntheticOnlyFields.forEach((field) => field.classList.toggle("hidden", !isSynthetic));
-    };
-
-    if (templateSelect) {
-      templateSelect.addEventListener("change", updateGenerateFormVisibility);
-      updateGenerateFormVisibility();
-    }
-
+    // File Upload Interaction
     const fileInput = document.getElementById("file-input");
     const dropzone = document.getElementById("dropzone");
     const fileList = document.getElementById("file-list");
@@ -347,12 +256,12 @@
       fileInput.files = dt.files;
 
       if (skipped > 0) {
-        fileWarning.textContent = `${skipped} file${skipped > 1 ? "s were" : " was"} ignored because only .csv files are allowed.`;
+        fileWarning.textContent = `${skipped} file${skipped > 1 ? "s were" : " was"} ignored. Only .csv files are allowed.`;
         fileWarning.classList.remove("hidden");
       } else {
-        fileWarning.textContent = "";
         fileWarning.classList.add("hidden");
       }
+      renderFiles();
     };
 
     const renderFiles = () => {
@@ -364,64 +273,73 @@
       }
 
       fileCount.textContent = `${files.length} file${files.length > 1 ? "s" : ""} selected`;
-      fileList.innerHTML = files.map((file) => `<li>${file.name}</li>`).join("");
+      fileList.innerHTML = files.map((file) => 
+        `<li class="flex items-center gap-2 rounded-lg bg-slate-800/30 px-3 py-1.5 border border-slate-700/30">
+          <svg class="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
+          <span class="truncate">${file.name}</span>
+        </li>`
+      ).join("");
     };
 
     if (dropzone && fileInput) {
       dropzone.addEventListener("click", () => fileInput.click());
-      fileInput.addEventListener("change", () => {
-        setFiles(fileInput.files);
-        renderFiles();
-      });
+      fileInput.addEventListener("change", () => setFiles(fileInput.files));
 
-      ["dragenter", "dragover"].forEach((eventName) => {
-        dropzone.addEventListener(eventName, (event) => {
+      ["dragenter", "dragover"].forEach(e => {
+        dropzone.addEventListener(e, (event) => {
           event.preventDefault();
-          dropzone.classList.add("border-cyan-200", "bg-slate-700/60");
+          dropzone.classList.add("border-cyan-400", "bg-slate-700/40", "scale-[1.01]");
         });
       });
 
-      ["dragleave", "drop"].forEach((eventName) => {
-        dropzone.addEventListener(eventName, (event) => {
+      ["dragleave", "drop"].forEach(e => {
+        dropzone.addEventListener(e, (event) => {
           event.preventDefault();
-          dropzone.classList.remove("border-cyan-200", "bg-slate-700/60");
+          dropzone.classList.remove("border-cyan-400", "bg-slate-700/40", "scale-[1.01]");
         });
       });
 
       dropzone.addEventListener("drop", (event) => {
-        const dt = event.dataTransfer;
-        if (!dt || !dt.files) {
-          return;
-        }
-        setFiles(dt.files);
-        renderFiles();
+        setFiles(event.dataTransfer.files);
       });
     }
 
+    // Charting
     {% if merged_filename %}
       const chartLabels = {{ chart_labels | tojson }};
       const chartValues = {{ chart_values | tojson }};
       const chartCanvas = document.getElementById("csvChart");
-      if (chartCanvas && chartLabels.length && chartValues.length) {
+      if (chartCanvas && chartLabels.length) {
         new Chart(chartCanvas, {
           type: "bar",
           data: {
             labels: chartLabels,
             datasets: [{
-              label: "Top values",
+              label: "Count",
               data: chartValues,
-              backgroundColor: "rgba(34, 211, 238, 0.7)",
+              backgroundColor: "rgba(34, 211, 238, 0.6)",
+              hoverBackgroundColor: "rgba(34, 211, 238, 0.8)",
               borderColor: "rgba(34, 211, 238, 1)",
-              borderWidth: 1
+              borderWidth: 2,
+              borderRadius: 8
             }]
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-              legend: { labels: { color: "#cbd5e1" } }
+              legend: { display: false }
             },
             scales: {
-              x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(148, 163, 184, 0.2)" } },
-              y: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(148, 163, 184, 0.2)" }, beginAtZero: true }
+              x: { 
+                ticks: { color: "#94a3b8", font: { size: 10 } }, 
+                grid: { display: false } 
+              },
+              y: { 
+                ticks: { color: "#94a3b8", font: { size: 10 } }, 
+                grid: { color: "rgba(148, 163, 184, 0.1)" }, 
+                beginAtZero: true 
+              }
             }
           }
         });

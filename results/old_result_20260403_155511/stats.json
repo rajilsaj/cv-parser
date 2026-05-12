@@ -1,0 +1,161 @@
+{
+    "conversations_0.7T5.csv": {
+        "avg_score": 3.9,
+        "avg_turns": 8.05,
+        "avg_div": 0.57,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    },
+    "conversations_2.csv": {
+        "avg_score": 3.89,
+        "avg_turns": 7.92,
+        "avg_div": 0.57,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    },
+    "conversation_0.9T.csv": {},
+    "conversation_0.7T.csv": {},
+    "conversation_0.5T.csv": {},
+    "conversation_0.2T.csv": {},
+    "conversations_0.2T10.csv": {
+        "avg_score": 3.88,
+        "avg_turns": 8.02,
+        "avg_div": 0.56,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    },
+    "conversations_0.9T5.csv": {
+        "avg_score": 3.87,
+        "avg_turns": 7.61,
+        "avg_div": 0.59,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    },
+    "conversations_0.5T10.csv": {
+        "avg_score": 3.88,
+        "avg_turns": 7.89,
+        "avg_div": 0.57,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    }
+}

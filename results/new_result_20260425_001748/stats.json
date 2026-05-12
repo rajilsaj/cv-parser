@@ -1,0 +1,33 @@
+{
+    "merged_7620.csv": {
+        "avg_score": 3.87,
+        "avg_turns": 7.99,
+        "avg_div": 0.57,
+        "params": {
+            "temperature": 0.4,
+            "NUM_VARIANTS": 10,
+            "sentiments": [
+                "angry",
+                "confused",
+                "neutral"
+            ],
+            "sentiment_probs": [
+                0.15,
+                0.3,
+                0.55
+            ],
+            "user_speech": [
+                "casual",
+                "professional",
+                "slang",
+                "typos"
+            ],
+            "user_speech_probs": [
+                0.5,
+                0.2,
+                0.1,
+                0.2
+            ]
+        }
+    }
+}

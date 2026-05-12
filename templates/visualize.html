@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSV Workspace - Visualize History</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100">
+  <!-- Fixed Background -->
+  <div class="fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_15%_10%,rgba(45,212,191,0.22),transparent_35%),radial-gradient(circle_at_90%_0%,rgba(56,189,248,0.2),transparent_40%),linear-gradient(165deg,#020617_8%,#0f172a_60%,#111827_100%)]"></div>
+
+  <!-- Main Content Container -->
+  <main class="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+    
+    <!-- Header Section -->
+    <header class="text-center space-y-2 mb-4">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/90">CSV Workspace</p>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Merge History</h1>
+      <p class="mx-auto max-w-2xl text-base text-slate-300">
+        Review and download previously merged CSV files and their reports.
+      </p>
+      <div class="mt-6">
+        <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/50 px-6 py-2 text-sm font-bold text-slate-100 transition-all hover:bg-slate-800 active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Back to Parser
+        </a>
+      </div>
+    </header>
+
+    <!-- History Table Panel -->
+    <section class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
+      <div class="overflow-x-auto rounded-xl border border-slate-800/50 bg-slate-950/20">
+        <table class="min-w-full divide-y divide-slate-800 text-xs sm:text-sm">
+          <thead>
+            <tr class="bg-slate-800/30 text-slate-200">
+              <th class="px-6 py-4 text-left font-bold tracking-wider">Date Merged</th>
+              <th class="px-6 py-4 text-left font-bold tracking-wider">Merged ID</th>
+              <th class="px-6 py-4 text-center font-bold tracking-wider">Conversations</th>
+              <th class="px-6 py-4 text-left font-bold tracking-wider">Constituent Files</th>
+              <th class="px-6 py-4 text-center font-bold tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/50">
+            {% for entry in history %}
+              <tr class="hover:bg-slate-800/10 transition-colors">
+                <td class="whitespace-nowrap px-6 py-4 text-slate-300 font-mono">{{ entry.date }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-cyan-400 font-bold font-mono">{{ entry.id }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-center">
+                  <span class="inline-flex items-center rounded-full bg-cyan-400/10 px-2.5 py-0.5 text-xs font-medium text-cyan-400 border border-cyan-400/20">
+                    {{ "{:,}".format(entry.total_conversations) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-slate-400">
+                  <div class="flex flex-wrap gap-2">
+                    {% for file_info in entry.uploaded_files %}
+                      <div class="relative group">
+                        <span class="cursor-help rounded bg-slate-800/50 px-2 py-0.5 text-[10px] border border-slate-700/50 hover:bg-slate-700/50 transition-colors">
+                          {{ file_info.name }}
+                        </span>
+                        
+                        {% if file_info.stats %}
+                        <!-- Popover/Tooltip -->
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 min-w-[280px]">
+                          <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-4 text-xs">
+                            <h4 class="font-bold text-cyan-400 mb-2 border-b border-slate-800 pb-1 truncate" title="{{ file_info.name }}">{{ file_info.name }}</h4>
+                            
+                            <!-- Metrics -->
+                            <div class="grid grid-cols-3 gap-x-2 gap-y-2 mb-3">
+                              <div>
+                                <p class="text-[8px] text-slate-500 uppercase font-bold">Avg Score</p>
+                                <p class="text-white font-mono font-bold">{{ file_info.stats.avg_score }}/4</p>
+                              </div>
+                              <div>
+                                <p class="text-[8px] text-slate-500 uppercase font-bold">Turns</p>
+                                <p class="text-white font-mono font-bold">{{ file_info.stats.avg_turns }}</p>
+                              </div>
+                              <div>
+                                <p class="text-[8px] text-slate-500 uppercase font-bold">Diversity</p>
+                                <p class="text-white font-mono font-bold">{{ file_info.stats.avg_div }}</p>
+                              </div>
+                            </div>
+
+                            <!-- Core Params -->
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                              <div class="rounded bg-slate-950/50 p-1.5 border border-slate-800/50 flex justify-between items-center">
+                                <span class="text-[8px] uppercase text-slate-500 font-bold">Temp</span>
+                                <span class="text-[10px] text-emerald-400 font-mono font-bold">{{ file_info.stats.params.temperature }}</span>
+                              </div>
+                              <div class="rounded bg-slate-950/50 p-1.5 border border-slate-800/50 flex justify-between items-center">
+                                <span class="text-[8px] uppercase text-slate-500 font-bold">Variants</span>
+                                <span class="text-[10px] text-emerald-400 font-mono font-bold">{{ file_info.stats.params.NUM_VARIANTS }}</span>
+                              </div>
+                            </div>
+
+                            <!-- Detailed Params -->
+                            <div class="space-y-2">
+                              <div>
+                                <p class="text-[8px] uppercase text-slate-500 font-bold mb-1">Sentiments</p>
+                                <div class="flex flex-wrap gap-1">
+                                  {% for i in range(file_info.stats.params.sentiments|length) %}
+                                    <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 border border-slate-800/50">
+                                      {{ file_info.stats.params.sentiments[i] }}: <span class="text-cyan-400 font-bold">{{ (file_info.stats.params.sentiment_probs[i] * 100)|int }}%</span>
+                                    </span>
+                                  {% endfor %}
+                                </div>
+                              </div>
+                              <div>
+                                <p class="text-[8px] uppercase text-slate-500 font-bold mb-1">User Speech</p>
+                                <div class="flex flex-wrap gap-1">
+                                  {% for i in range(file_info.stats.params.user_speech|length) %}
+                                    <span class="text-[9px] bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 border border-slate-800/50">
+                                      {{ file_info.stats.params.user_speech[i] }}: <span class="text-cyan-400 font-bold">{{ (file_info.stats.params.user_speech_probs[i] * 100)|int }}%</span>
+                                    </span>
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45"></div>
+                          </div>
+                        </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    {% if entry.csv_filename %}
+                      <a href="{{ url_for('download', filepath=entry.csv_filename) }}" class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors" title="Download CSV">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M7 10l5 5m0 0l5-5m-5 5V3"></path></svg>
+                      </a>
+                    {% endif %}
+                    {% if entry.report_filename %}
+                      <a href="{{ url_for('download', filepath=entry.report_filename) }}" class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-colors" title="Download Report">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      </a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">
+                  No merge history found. Start by merging some CSV files!
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-slate-500 text-[10px] font-medium tracking-widest uppercase">
+      &copy; 2026 CSV Parser & Merger &bull; Powered by Flask & Tailwind
+    </footer>
+  </main>
+</body>
+</html>
